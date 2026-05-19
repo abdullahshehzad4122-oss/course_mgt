@@ -66,6 +66,10 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
                 // 4. Nullify recorded_by in attendance (keep attendance records, just clear recorder)
                 $pdo->prepare("UPDATE attendance SET recorded_by = NULL WHERE recorded_by = ?")->execute([$del_id]);
 
+                // 4.5. Remove user logs and submissions to prevent FK constraint failures
+                $pdo->prepare("DELETE FROM access_logs WHERE user_id = ?")->execute([$del_id]);
+                $pdo->prepare("DELETE FROM submissions WHERE student_id = ?")->execute([$del_id]);
+
                 // 5. Finally delete the user
                 $pdo->prepare("DELETE FROM users WHERE user_id = ?")->execute([$del_id]);
 
@@ -239,7 +243,7 @@ include __DIR__ . '/../../includes/sidebar.php';
                                     
                                     <?php if ($_SESSION['role_id'] == 1): ?>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-info disabled" title="Edit coming soon"><i class="fas fa-edit"></i></a>
+                                        <a href="edit_user.php?id=<?= $user['user_id'] ?>" class="btn btn-sm btn-info" title="Edit User"><i class="fas fa-edit"></i></a>
                                         <?php if ($user['user_id'] != $_SESSION['user_id']): ?>
                                         <a href="manage_users.php?delete=<?= $user['user_id'] ?>" 
                                            class="btn btn-sm btn-danger ml-1"

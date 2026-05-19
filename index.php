@@ -3,7 +3,11 @@ session_start();
 require_once __DIR__ . '/config/db.php';
 
 if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
+    if ($_SESSION['role_id'] == 4) {
+        header('Location: student/dashboard.php');
+    } else {
+        header('Location: dashboard.php');
+    }
     exit;
 }
 
@@ -25,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
             $login_error = "Invalid username or password. Please try again.";
+        } elseif ($user['role_id'] == 4) {
+            $login_error = "Students must use the dedicated Student Portal to log in.";
         } else {
             session_regenerate_id(true);
             $_SESSION = [
@@ -489,6 +495,11 @@ $app_name = $stmt->fetchColumn() ?: 'Course Management System';
         </button>
     </form>
 
+    <div class="auth-footer" style="margin-top: 1rem;">
+        <a href="student/login.php" style="text-decoration: none; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); color: var(--primary); font-weight: 600; width: 100%; display: block; text-align: center; background: #e0e7ff;">
+            <i class="fas fa-user-graduate"></i> Are you a Student? Go to Student Portal
+        </a>
+    </div>
     <div class="auth-footer">
         <i class="fas fa-shield-alt text-success"></i> Secured with enterprise-grade encryption
     </div>

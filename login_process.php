@@ -34,6 +34,10 @@ if (!$user || !password_verify($password, $user['password_hash'])) {
     $_SESSION['login_error'] = "Invalid username or password";
     header('Location: index.php');
     exit;
+} elseif ($user['role_id'] == 4) {
+    $_SESSION['login_error'] = "Students must use the dedicated Student Portal to log in.";
+    header('Location: index.php');
+    exit;
 }
 
 // Start secure session
@@ -52,6 +56,5 @@ $log_query = "INSERT INTO access_logs (user_id, page, access_type, timestamp)
 $log_stmt = $pdo->prepare($log_query);
 $log_stmt->execute([$user['user_id']]);
 
-// Redirect to dashboard (Section 3.2)
 header('Location: dashboard.php');
 exit;

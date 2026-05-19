@@ -146,7 +146,9 @@ include __DIR__ . '/../../includes/sidebar.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge badge-info"><?= $a['submission_count'] ?></span>
+                                        <a href="view_submissions.php?id=<?= $a['assignment_id'] ?>" class="badge badge-info p-2 shadow-sm" style="font-size: 0.9rem;" title="Grade Submissions">
+                                            <?= $a['submission_count'] ?> <i class="fas fa-arrow-circle-right ml-1"></i>
+                                        </a>
                                     </td>
                                     <td>
                                         <div class="btn-group">
