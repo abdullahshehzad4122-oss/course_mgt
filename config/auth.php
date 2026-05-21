@@ -36,7 +36,7 @@ function checkAccess($required_permission = 'view') {
     $access = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Permission validation (Section 9.4)
-    if (!$access) {
+    if (!$access || !$access['can_view']) {
         logAccessViolation($current_page);
         header("HTTP/1.0 403 Forbidden");
         exit("Access denied. Contact administrator.");

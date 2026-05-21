@@ -11,14 +11,22 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Fetch departments and courses for dropdowns
+$dept_stmt = $pdo->query("SELECT * FROM departments ORDER BY dept_name");
+$departments = $dept_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$course_stmt = $pdo->query("SELECT c.course_id, c.course_code, c.course_name, d.dept_id FROM courses c JOIN departments d ON c.dept_id = d.dept_id ORDER BY c.course_name");
+$courses = $course_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $register_error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['confirm_password'] ?? '';
+    $course_id = $_POST['course_id'] ?? '';
 
-    if (empty($username) || empty($password) || empty($confirm)) {
-        $register_error = "All fields are required.";
+    if (empty($username) || empty($password) || empty($confirm) || empty($course_id)) {
+        $register_error = "All fields are required, including Program selection.";
     } elseif ($password !== $confirm) {
         $register_error = "Passwords do not match.";
     } elseif (strlen($password) < 6) {
@@ -31,13 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $register_error = "This username is already taken. Please choose another.";
         } else {
             try {
+                $pdo->beginTransaction();
                 // Hardcode role_id = 4 (Student) to ensure strict separation
                 $stmt = $pdo->prepare("INSERT INTO users (username, password_hash, role_id) VALUES (?, ?, 4)");
                 $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT)]);
                 
+                $user_id = $pdo->lastInsertId();
+                
+                if ($course_id) {
+                    $enroll_stmt = $pdo->prepare("INSERT INTO enrollments (student_id, course_id, status) VALUES (?, ?, 'pending')");
+                    $enroll_stmt->execute([$user_id, $course_id]);
+                }
+                
+                $pdo->commit();
+                
                 header('Location: login.php?registered=1');
                 exit;
             } catch (PDOException $e) {
+                $pdo->rollBack();
                 $register_error = "Registration failed due to a database error.";
             }
         }
@@ -195,6 +214,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="fas fa-check-circle input-icon"></i>
                 <input type="password" name="confirm_password" placeholder="Repeat password" required>
             </div>
+            
+            <div class="form-group">
+                <label>Department (Optional filter)</label>
+                <i class="fas fa-building input-icon"></i>
+                <select id="dept_id" style="width: 100%; padding: 12px 15px 12px 40px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; outline: none; appearance: none; background: white;" onchange="filterCourses()">
+                    <option value="">-- All Departments --</option>
+                    <?php foreach ($departments as $dept): ?>
+                        <option value="<?= $dept['dept_id'] ?>"><?= htmlspecialchars($dept['dept_name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Program / Class *</label>
+                <i class="fas fa-book input-icon"></i>
+                <select name="course_id" id="course_id" style="width: 100%; padding: 12px 15px 12px 40px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; outline: none; appearance: none; background: white;" required>
+                    <option value="">-- Select Program --</option>
+                    <?php foreach ($courses as $course): ?>
+                        <option value="<?= $course['course_id'] ?>" data-dept="<?= $course['dept_id'] ?>"><?= htmlspecialchars($course['course_code'] . ' - ' . $course['course_name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
             <button type="submit" class="btn-submit">Create Account <i class="fas fa-check ml-2"></i></button>
         </form>
@@ -205,5 +246,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<script>
+function filterCourses() {
+    var deptId = document.getElementById('dept_id').value;
+    var courseSelect = document.getElementById('course_id');
+    var options = courseSelect.options;
+    
+    courseSelect.value = "";
+    
+    for (var i = 1; i < options.length; i++) {
+        var option = options[i];
+        if (deptId === "" || option.getAttribute('data-dept') === deptId) {
+            option.style.display = "";
+        } else {
+            option.style.display = "none";
+        }
+    }
+}
+document.addEventListener("DOMContentLoaded", filterCourses);
+</script>
 </body>
 </html>

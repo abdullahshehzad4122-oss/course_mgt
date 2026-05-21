@@ -55,26 +55,26 @@ $conditions = [];
 
 // Role-based data access (Section 9.5)
 if ($_SESSION['role_id'] == 3) { // Instructor
-    $conditions[] = "instructor_id = ?";
+    $conditions[] = "c.instructor_id = ?";
     $params[] = $_SESSION['user_id'];
 } elseif ($_SESSION['role_id'] == 4) { // Student
-    $conditions[] = "course_id IN (SELECT course_id FROM enrollments WHERE student_id = ?)";
+    $conditions[] = "c.course_id IN (SELECT course_id FROM enrollments WHERE student_id = ?)";
     $params[] = $_SESSION['user_id'];
 }
 
 // Apply filters
 if ($dept_id > 0) {
-    $conditions[] = "dept_id = ?";
+    $conditions[] = "c.dept_id = ?";
     $params[] = $dept_id;
 }
 
 if ($instructor_id > 0) {
-    $conditions[] = "instructor_id = ?";
+    $conditions[] = "c.instructor_id = ?";
     $params[] = $instructor_id;
 }
 
 if (!empty($search)) {
-    $conditions[] = "(course_code LIKE ? OR course_name LIKE ?)";
+    $conditions[] = "(c.course_code LIKE ? OR c.course_name LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
 }
@@ -83,7 +83,7 @@ if (!empty($search)) {
 $where = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
 
 // Get total count for pagination
-$count_query = "SELECT COUNT(*) FROM courses $where";
+$count_query = "SELECT COUNT(*) FROM courses c $where";
 $count_stmt = $pdo->prepare($count_query);
 $count_stmt->execute($params);
 $total_courses = $count_stmt->fetchColumn();
