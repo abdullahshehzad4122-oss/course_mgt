@@ -1,6 +1,6 @@
 # 🎓 Course Management System (CMS)
 
-![Dashboard Mockup](file:///C:/Users/lenovo/.gemini/antigravity/brain/e99b03a4-9e57-48d7-a937-110e646781b4/dashboard_mockup_1778559234138.png)
+![Dashboard Mockup](assets/dashboard_mockup.png)
 
 A comprehensive, modern web application designed for educational institutions to manage courses, students, attendance, and assignments with a focus on user experience and security.
 
@@ -52,7 +52,7 @@ course_mgt/
 │   └── users/          # User and role management
 ├── student/            # Dedicated Student Portal application
 ├── uploads/            # Directory for assignment submissions
-├── database.sql        # Database schema and seed data
+├── course_mgt.sql      # Database schema and seed data
 ├── index.php           # Main login portal
 └── dashboard.php       # Admin/Instructor dashboard
 ```
@@ -70,7 +70,7 @@ course_mgt/
 3.  **Database Import**:
     - Go to `http://localhost/phpmyadmin`.
     - Create a new database named `course_mgt`.
-    - Import the `database.sql` file located in the project root.
+    - Import the `course_mgt.sql` file located in the project root.
 4.  **Configuration**:
     - Open `config/db.php` and verify the database credentials (default: host=`localhost`, user=`root`, password=``).
 5.  **Access the App**:
